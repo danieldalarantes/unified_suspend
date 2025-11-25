@@ -1,69 +1,79 @@
-# /etc/default/grub: configures boot entry generation for GRUB menu.
-#
-# Run update-grub or "grub-mkconfig -o /boot/grub/grub.cfg" after modifying this file to
-# update /boot/grub/grub.cfg (GRUB menu). Documentation for this file is available at:
-# https://www.gnu.org/software/grub/manual/grub/html_node/Simple-configuration.html
+# /etc/default/grub
+# --------------------------------------------------------
+# Configure the grub bootloader menu and its boot entries.
+# --------------------------------------------------------
+# If settings are added, changed, or removed, the shell command
+# `update-grub` or `grub-mkconfig -o /boot/grub/grub.cfg` should
+# be called to rewrite the configuration file /boot/grub/grub.cfg
+# and thereby update the grub bootloader menu and its boot entries.
 
-# Uncomment to enable os-prober. If there are other operating systems
-# installed, os-prober can be run to generate their boot entries.
-# However, if those operating systems use either LVM, encrypted
-# volumes, or raw disks, running os-prober can be problematic
-# since it attempts to mount their filesystems for probing.
-# GRUB_DISABLE_OS_PROBER=false
-
-# Uncomment to filter out bad RAM, modifying as needed. This
-# filtering works with Linux Kernel (no patch required) and
-# with any kernel that obtains the memory map information
-# from GRUB, such as GNU Mach Kernel and FreeBSD Kernel.
-# GRUB_BADRAM=0x01234567,0xfefefefe,0x89abcdef,0xefefefef
-
-# Uncomment to disable the graphical terminal.
-# GRUB_TERMINAL=console
-
-# Uncomment to select the graphical terminal resolution. Only
-# modes supported through VBE should be chosen. The vbeinfo
-# command can be run at GRUB command prompt to list them.
-# GRUB_GFXMODE=640x480
-
-# Uncomment to prevent any UUID from appearing in Linux Kernel command line.
-# GRUB_DISABLE_LINUX_UUID=true
-
-# Uncomment to prevent any rescue-mode boot entries from being generated.
-# GRUB_DISABLE_RECOVERY=true
-
-# Uncomment to enable the beeping sound right after GRUB starts.
-# GRUB_INIT_TUNE="480 440 1"
-
-# On every boot: opting for true suspend-to-RAM actions at the
-# kernel level to maximize power savings. This option also
-# relies on the SuspendState=mem parameter being included
-# in /etc/systemd/sleep.conf.d/ to become effective.
+# Select true suspend-to-ram actions to maximize power savings.
+# This selection also depends on the systemd option `SuspendState=mem`.
 GRUB_CMDLINE_LINUX=" \
 mem_sleep_default=deep \
 "
 
-# On normal boot: specifying swap file to enable resume, using the
-# filesystem UUID and the swap file offset. Specifying swap file
-# again to enable swap space, using the swap file path instead
-# since the filesystem is already mounted at that stage.
+# Define specific linux parameter lists for
+# default-mode and recovery-mode boot entries.
 GRUB_CMDLINE_LINUX_DEFAULT=" \
-resume=UUID=ca0883be-e260-44f0-a33f-56785ed8734e \
+resume=/dev/disk/by-uuid/ca0883be-e260-44f0-a33f-56785ed8734e \
 resume_offset=55646208 \
-systemd.swap-extra=/swap.img \
+root=/dev/disk/by-uuid/ca0883be-e260-44f0-a33f-56785ed8734e \
+rootflags=rw \
+rootfstype=ext4 \
+rw -- \
+systemd.mount-extra=/dev/disk/by-uuid/6A1C-C7D3:/boot/efi:vfat:rw \
+systemd.swap-extra=/swap.img:pri=0 \
 "
-
-# On rescue-mode boot: preventing any swap file from being used
-# for resume, selecting rescue-mode boot, and preventing any
-# swap file from being used as swap space.
 GRUB_CMDLINE_LINUX_RECOVERY=" \
-noresume \
-rescue \
-systemd.swap=no \
+nomodeset \
+root=/dev/disk/by-uuid/ca0883be-e260-44f0-a33f-56785ed8734e \
+rootflags=noatime,nodiscard,noload,norecovery,ro \
+rootfstype=ext4 \
+ro -- \
+fsck.mode=skip \
+fsck.repair=no \
+systemd.unit=rescue.target \
 "
 
-# Using only the main page of GRUB menu to display all boot entries.
-GRUB_DISABLE_SUBMENU=true
-
-# Informing the operating system name, used by GRUB scripts to
-# label boot entries and to apply themes in GRUB menu.
+# Define general boot entry settings.
+GRUB_DEFAULT=0
 GRUB_DISTRIBUTOR=Ubuntu
+
+# Enable the enforcement of linux parameters to ensure that
+# each boot entry passes the respective linux parameter list
+# exactly as defined in this file. Manually export this custom
+# option, since only standard options are automatically exported.
+export GRUB_ENFORCE_LINUX_PARAMETERS=yes
+
+# Define general interface settings.
+GRUB_TIMEOUT=3
+GRUB_TIMEOUT_STYLE=menu
+
+# Enable bad ram filtering, which works with linux kernel
+# and with other kernels that obtain memory map information
+# from grub, such as freebsd kernel and gnu mach microkernel.
+# GRUB_BADRAM=0x01234567,0xfefefefe,0x89abcdef,0xefefefef
+
+# Disable the use of uuids in linux parameters.
+# GRUB_DISABLE_LINUX_UUID=true
+
+# Enable os-prober to detect other operating systems and
+# generate boot entries for them. Using os-prober can cause
+# problems when handling encrypted volumes, lvm, or raw disks,
+# since it attempts to mount filesystems during the probing process.
+# GRUB_DISABLE_OS_PROBER=false
+
+# Disable the generation of recovery-mode boot entries.
+# GRUB_DISABLE_RECOVERY=true
+
+# Select the resolution of the graphical terminal. Only
+# modes supported through vbe should be selected. The grub
+# command `vbeinfo` lists all modes that are currently available.
+# GRUB_GFXMODE=640x480
+
+# Emit a sound alert when starting the grub bootloader.
+# GRUB_INIT_TUNE="480 440 1"
+
+# Disable the graphical terminal.
+# GRUB_TERMINAL=console
