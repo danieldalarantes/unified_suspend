@@ -1,15 +1,15 @@
 # /etc/fstab
-# -------------------------------------------
-# Specify filesystems for automatic mounting.
-# -------------------------------------------
-# Using uuids to specify the filesystem sources
-# ensures they are found correctly even if devices
-# are added, changed, or removed. The shell command
-# `blkid` lists all uuids that are currently visible.
+# -------------------------------------
+# Configure filesystems and mountpoints
+# -------------------------------------
+# UUID is the recommended format for specifying
+# filesystems, as it ensures correct matching even
+# if devices are added, changed, and removed. Running
+# `blkid` in a shell prints the UUID of each filesystem.
 
 # -------------------------------------------------------------------
-# | fs.source | m.target | fs.type | m.options | fs.dump | fs.check |
+# filesystem : mountpoint : fs_type : mp_options : fs_dump : fs_check
 # -------------------------------------------------------------------
-
-# The automatic mounting of efi, root, and swap is controlled
-# by linux parameters and therefore not specified in this file.
+UUID=ca0883be-e260-44f0-a33f-56785ed8734e /         ext4 defaults 0 1
+UUID=6A1C-C7D3                            /boot/efi vfat defaults 0 1
+/swap.img                                 none      swap defaults 0 0

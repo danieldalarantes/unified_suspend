@@ -1,79 +1,25 @@
 # /etc/default/grub
-# --------------------------------------------------------
-# Configure the grub bootloader menu and its boot entries.
-# --------------------------------------------------------
-# If settings are added, changed, or removed, the shell command
-# `update-grub` or `grub-mkconfig -o /boot/grub/grub.cfg` should
-# be called to rewrite the configuration file /boot/grub/grub.cfg
-# and thereby update the grub bootloader menu and its boot entries.
+# ----------------------------------------------------
+# Configure the bootloader using environment variables
+# ----------------------------------------------------
+# Added, changed, and removed variables require running
+# `grub-mkconfig -o /boot/grub/grub.cfg` or `update-grub`
+# in a shell to take effect in the bootloader configuration.
 
-# Select true suspend-to-ram actions to maximize power savings.
-# This selection also depends on the systemd option `SuspendState=mem`.
-GRUB_CMDLINE_LINUX=" \
-mem_sleep_default=deep \
-"
+# Set general boot parameters to enforce the root filesystem check,
+# optimize suspend-to-memory power savings, resume if a memory image
+# exists in the swap file, and use a read-only root mountpoint at boot.
+GRUB_CMDLINE_LINUX="fsck.mode=force fsck.repair=yes mem_sleep_default=deep \
+resume=UUID=ca0883be-e260-44f0-a33f-56785ed8734e resume_offset=55646208 ro \
+root=UUID=ca0883be-e260-44f0-a33f-56785ed8734e rootflags=ro rootfstype=ext4"
 
-# Define specific linux parameter lists for
-# default-mode and recovery-mode boot entries.
-GRUB_CMDLINE_LINUX_DEFAULT=" \
-resume=/dev/disk/by-uuid/ca0883be-e260-44f0-a33f-56785ed8734e \
-resume_offset=55646208 \
-root=/dev/disk/by-uuid/ca0883be-e260-44f0-a33f-56785ed8734e \
-rootflags=rw \
-rootfstype=ext4 \
-rw -- \
-systemd.mount-extra=/dev/disk/by-uuid/6A1C-C7D3:/boot/efi:vfat:rw \
-systemd.swap-extra=/swap.img:pri=0 \
-"
-GRUB_CMDLINE_LINUX_RECOVERY=" \
-nomodeset \
-root=/dev/disk/by-uuid/ca0883be-e260-44f0-a33f-56785ed8734e \
-rootflags=noatime,nodiscard,noload,norecovery,ro \
-rootfstype=ext4 \
-ro -- \
-fsck.mode=skip \
-fsck.repair=no \
-systemd.unit=rescue.target \
-"
+# Set individual boot parameters for each boot mode.
+GRUB_CMDLINE_LINUX_DEFAULT=systemd.unit=default.target
+GRUB_CMDLINE_LINUX_RECOVERY=systemd.unit=rescue.target
 
-# Define general boot entry settings.
-GRUB_DEFAULT=0
+# Display the boot menu and wait three seconds to
+# allow manual selection before defaulting to Ubuntu.
+GRUB_DEFAULT=Ubuntu
 GRUB_DISTRIBUTOR=Ubuntu
-
-# Enable the enforcement of linux parameters to ensure that
-# each boot entry passes the respective linux parameter list
-# exactly as defined in this file. Manually export this custom
-# option, since only standard options are automatically exported.
-export GRUB_ENFORCE_LINUX_PARAMETERS=yes
-
-# Define general interface settings.
 GRUB_TIMEOUT=3
 GRUB_TIMEOUT_STYLE=menu
-
-# Enable bad ram filtering, which works with linux kernel
-# and with other kernels that obtain memory map information
-# from grub, such as freebsd kernel and gnu mach microkernel.
-# GRUB_BADRAM=0x01234567,0xfefefefe,0x89abcdef,0xefefefef
-
-# Disable the use of uuids in linux parameters.
-# GRUB_DISABLE_LINUX_UUID=true
-
-# Enable os-prober to detect other operating systems and
-# generate boot entries for them. Using os-prober can cause
-# problems when handling encrypted volumes, lvm, or raw disks,
-# since it attempts to mount filesystems during the probing process.
-# GRUB_DISABLE_OS_PROBER=false
-
-# Disable the generation of recovery-mode boot entries.
-# GRUB_DISABLE_RECOVERY=true
-
-# Select the resolution of the graphical terminal. Only
-# modes supported through vbe should be selected. The grub
-# command `vbeinfo` lists all modes that are currently available.
-# GRUB_GFXMODE=640x480
-
-# Emit a sound alert when starting the grub bootloader.
-# GRUB_INIT_TUNE="480 440 1"
-
-# Disable the graphical terminal.
-# GRUB_TERMINAL=console
